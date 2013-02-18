@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+
+    <title>Pinboard</title>
+
+    <link rel="stylesheet" href="css/foundation.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <script type="text/x-handlebars" data-template-name="application">
+      <div class="pinboard row">
+        <div class="twelve columns">
+          {{! notes template will end up here }}
+          {{ outlet }}
+        </div>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="notes">
+      <div class="notes">
+        {{! notes/index template or any nested route should end up here }}
+        {{ outlet }}
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="notes/index">
+      {{! iterate over the models/contents of the controller }}
+      {{#each note in controller}}
+        {{! each note will be scoped to NoteController thanks to itemController: ['note'] }}
+        {{! not too sure when to go partial, template or render but render warns '...already rendered...'}}
+        {{ template note }}
+      {{/each}}
+
+      <div class="twelve columns">
+        {{! by using the `needs` directive in the controller we may target our action to it. }}
+        {{! adding a target doesn''t feel right, but i want all handling in NotesController 
+            while keeping the elements in this template. }}
+        <button class="button radius" {{ action add target="controllers.notes" }}>Add Notes</button>
+        <button class="button radius" {{ action clear target="controllers.notes" }}>Clear Pinboard</button>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="note">
+      <div class="four columns">
+        <div class="panel">
+          <div class="row">
+            {{! note.date comes from models in the controller from the iteration in 'notes/index' }}
+            <span class="ten columns">{{ note.date }}</span>
+            {{! call `remove` method on `context` and pass `note` as argument }}
+            <span class="two columns" {{ action remove note }}>&cross;</span>
+          </div>
+          <hr>
+          <p>{{ note.message }}</p>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="new-note">
+      {{! modal markup }}
+      <div id="new-note" class="reveal-modal expand">
+        <a class="close-reveal-modal">&#215;</a>
+        <h1>Write Up!</h1>
+        {{! create a TextArea bind to `note` on `context`. would prefer simple HTML and hook JS later }}
+        {{ view Ember.TextArea valueBinding="note" rows="8" autofocus="true" }}
+        {{! call createNote on context }}
+        <button class="button radius" {{ action createNote }}>Add</button>
+      </div>
+    </script> 
+
+    <script src="app/vendor/jquery.js"></script>
+    <script src="app/vendor/foundation.min.js"></script>
+    <script src="app/vendor/handlebars.js"></script>
+    <script src="app/vendor/ember.js"></script>
+    <script src="app/app.js"></script>
+  </body>
+</html>
