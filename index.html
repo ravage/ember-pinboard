@@ -35,7 +35,7 @@
 
       <div class="twelve columns">
         {{! by using the `needs` directive in the controller we may target our action to it. }}
-        {{! adding a target doesn''t feel right, but i want all handling in NotesController 
+        {{! adding a target doesn''t feel right, but i want all handling in NotesController
             while keeping the elements in this template. }}
         <button class="button radius" {{ action add target="controllers.notes" }}>Add Notes</button>
         <button class="button radius" {{ action clear target="controllers.notes" }}>Clear Pinboard</button>
@@ -47,7 +47,7 @@
         <div class="panel">
           <div class="row">
             {{! note.date comes from models in the controller from the iteration in 'notes/index' }}
-            <span class="ten columns">{{ note.date }}</span>
+            <span class="ten columns">{{ date note.date format='DD/MM/YYYY @ HH:mm:ss' }}</span>
             {{! call `remove` method on `context` and pass `note` as argument }}
             <span class="two columns" {{ action remove note }}>&cross;</span>
           </div>
@@ -67,12 +67,14 @@
         {{! call createNote on context }}
         <button class="button radius" {{ action createNote }}>Add</button>
       </div>
-    </script> 
+    </script>
 
     <script src="app/vendor/jquery.js"></script>
     <script src="app/vendor/foundation.min.js"></script>
+    <script src="app/vendor/moment.js"></script>
     <script src="app/vendor/handlebars.js"></script>
     <script src="app/vendor/ember.js"></script>
+    <script src="app/vendor/ember-data.js"></script>
     <script src="app/app.js"></script>
   </body>
 </html>

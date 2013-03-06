@@ -1,4 +1,4 @@
-/*global App:true*/
+/*global App:true, Handlebars:true, moment:true*/
 /*jshint strict:false*/
 
 /*
@@ -16,16 +16,7 @@ window.App = Ember.Application.create({
     console.log([this.name, 'loaded!'].join(' '));
   },
 
-  // just to make it quick
-  // TODO: make Handlebars helper
-  dateFormat: function(date) {
-    var format = [date.getDate(), date.getMonth() + 1, date.getYear() + 1900].join('/');
-
-    format += ' @ ';
-    format += [date.getHours(), date.getMinutes(), date.getSeconds()].join(':');
-
-    return format;
-  }
+  store: {}
 });
 
 // Routes
@@ -54,6 +45,10 @@ App.Router.map(function() {
 App.NotesIndexRoute = Ember.Route.extend({
   model: function() {
     return App.Notes;
+  },
+
+  setupController: function() {
+    this.controllerFor('notes').set('model', App.Notes);
   }
 });
 
@@ -88,19 +83,20 @@ App.NotesController = Ember.ArrayController.extend({
   },
 
   // handles (Clear Notes) notes removal
-  // Calling the Notes store like this doesn't look good
+  // by setting up this controller model it can act as a collection
   clear: function() {
-    App.Notes.clear();
+    this.get('model').clear();
   },
 
   // handles note creation sent from modal view
+  // by setting up this controller model we can call `addObject`
   createNote: function() {
-    var note = App.Note.create({
+    var note = Ember.Object.create({
       message: this.get('note'),
-      date: App.dateFormat(new Date())
+      date: new Date()
     });
-     
-    App.Notes.addObject(note);
+
+    this.addObject(note);
 
     this.set('note', '');
   }
@@ -114,8 +110,11 @@ App.NotesController = Ember.ArrayController.extend({
  */
 App.NoteController = Ember.ObjectController.extend({
   remove: function() {
-    var note = this.get('model');
-    App.Notes.removeObject(note);
+    var note = this.get('model'),
+    collection = this.get('target').get('model');
+
+    collection.removeObject(note);
+    console.log(this.get('store'));
   }
 });
 
@@ -136,14 +135,14 @@ App.NoteModalView = Ember.View.extend({
   // act after element is in the DOM
   didInsertElement: function() {
     var self = this, dispose, modal, focus;
-    
+
     modal = this.$('#new-note');
 
     // destroy after modal animation completes
     dispose = function() {
       self.destroy();
     };
-    
+
     // focus textarea after modal opens
     focus = function() {
       modal.find('textarea').focus();
@@ -155,7 +154,7 @@ App.NoteModalView = Ember.View.extend({
     modal.find('button').on('click', function() {
       focus();
     });
-    
+
     // laubch the modal
     modal.reveal({
       closed: dispose,
@@ -164,13 +163,20 @@ App.NoteModalView = Ember.View.extend({
   }
 });
 
+
+// Helpers
+Ember.Handlebars.registerBoundHelper('date', function(date, options) {
+  console.log(options.hash.format);
+  return moment(date).format(options.hash.format || 'L');
+});
+
+
 // Models
 
 // TODO: LocalStorageAdapter and ember-data
 App.Note = Ember.Object.extend();
-
 App.Notes = [];
 
-App.Notes.pushObject(App.Note.create({ message: "Note #1", date: App.dateFormat(new Date()) }));
-App.Notes.pushObject(App.Note.create({ message: "Note #2", date: App.dateFormat(new Date()) }));
-App.Notes.pushObject(App.Note.create({ message: "Note #3", date: App.dateFormat(new Date()) }));
+App.Notes.pushObject(App.Note.create({ message: "Note #1", date: new Date() }));
+App.Notes.pushObject(App.Note.create({ message: "Note #2", date: new Date() }));
+App.Notes.pushObject(App.Note.create({ message: "Note #3", date: new Date() }));
